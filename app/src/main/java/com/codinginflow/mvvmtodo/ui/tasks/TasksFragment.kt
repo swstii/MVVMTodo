@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +19,7 @@ import com.codinginflow.mvvmtodo.R
 import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.databinding.FragmentTasksBinding
+import com.codinginflow.mvvmtodo.util.exhaustive
 import com.codinginflow.mvvmtodo.util.onQueryTextChanged
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,6 +60,10 @@ class TasksFragment : Fragment(R.layout.fragment_tasks) , TasksAdapter.OnItemCli
                     viewModel.onTaskSwiped(task)
                 }
             }).attachToRecyclerView(recyclerViewTasks)
+
+            fabAddTask.setOnClickListener {
+                viewModel.onAddNewTaskClick()
+            }
         }
         viewModel.tasks.observe(viewLifecycleOwner){
             taskAdapter.submitList(it)
@@ -72,7 +78,19 @@ class TasksFragment : Fragment(R.layout.fragment_tasks) , TasksAdapter.OnItemCli
                                 viewModel.onUndoDeleteClick(event.task)
                             }.show()
                     }
-                }
+                    is TasksViewModel.TasksEvent.NavigateToAddTaskScreen -> {
+
+                        val action = TasksFragmentDirections.actionTasksFragment2ToAddEditTaskFragment(null,"New Task")
+                        findNavController().navigate(action)
+
+                    }
+                    is TasksViewModel.TasksEvent.NavigateToEditTaskScreen -> {
+
+                        val action = TasksFragmentDirections.actionTasksFragment2ToAddEditTaskFragment(event.task,"Edit Task")
+                        findNavController().navigate(action)
+
+                    }
+                }.exhaustive
             }
         }
 
