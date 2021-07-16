@@ -1,12 +1,14 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -14,7 +16,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SnapHelper
 import com.codinginflow.mvvmtodo.R
 import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
@@ -65,6 +66,12 @@ class TasksFragment : Fragment(R.layout.fragment_tasks) , TasksAdapter.OnItemCli
                 viewModel.onAddNewTaskClick()
             }
         }
+
+        setFragmentResultListener("add_edit_request"){_,bundle ->
+            val result = bundle.getInt("add_edit_result")
+            viewModel.onAddEditResult(result)
+        }
+
         viewModel.tasks.observe(viewLifecycleOwner){
             taskAdapter.submitList(it)
         }
@@ -89,6 +96,10 @@ class TasksFragment : Fragment(R.layout.fragment_tasks) , TasksAdapter.OnItemCli
                         val action = TasksFragmentDirections.actionTasksFragment2ToAddEditTaskFragment(event.task,"Edit Task")
                         findNavController().navigate(action)
 
+                    }
+                    is TasksViewModel.TasksEvent.ShowTaskSavedConfirmationMessage -> {
+                        Log.d("OOOOO", "Snackbar sould come ")
+                        Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
                     }
                 }.exhaustive
             }
